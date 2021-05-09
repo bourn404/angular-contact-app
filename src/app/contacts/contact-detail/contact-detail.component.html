@@ -1,9 +1,9 @@
 <div class="panel panel-default">
     <div class="panel-heading clearfix" >
-        <h4><strong>Contact Name</strong></h4>
+        <h4><strong>{{ contact.name }}</strong></h4>
         <div>
             <div class="pull-left">
-                <img src="" alt="" style="height: 100px;">
+                <img src="{{ contact.imageUrl }}" alt="{{ contact.name }}" style="height: 100px;">
             </div>
             <div class="btn-group pull-right">
                 <a href="#" class="btn btn-primary btn-sm">Edit</a>
@@ -17,11 +17,11 @@
                 <table class="table">
                     <tr>
                         <td><strong>Email: </strong></td>
-                        <td></td>
+                        <td>{{ contact.email }}</td>
                     </tr>
                     <tr>
                         <td><strong>Phone: </strong></td>
-                        <td></td>
+                        <td>{{ contact.phone }}</td>
                     </tr>
                 </table>
             </div>
