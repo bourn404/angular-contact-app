@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Document } from './document.model';
 
 @Component({
   selector: 'app-documents',
@@ -6,10 +7,13 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./documents.component.scss']
 })
 export class DocumentsComponent implements OnInit {
+  selectedDocument: Document;
 
   constructor() { }
 
   ngOnInit(): void {
   }
+
+  
 
 }
