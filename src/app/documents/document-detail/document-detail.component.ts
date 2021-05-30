@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Params } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { Document } from '../document.model';
 import { DocumentService } from '../document.service';
 
@@ -12,7 +12,9 @@ export class DocumentDetailComponent implements OnInit {
   document: Document;
   id: number;
 
-  constructor(private documentService: DocumentService, private route: ActivatedRoute) { }
+  constructor(private documentService: DocumentService, 
+    private route: ActivatedRoute,
+    private router: Router) { }
 
   ngOnInit() {
     this.route.params.subscribe(
@@ -21,6 +23,10 @@ export class DocumentDetailComponent implements OnInit {
         this.document = this.documentService.getDocument(this.id);
       }
     )
+  }
+
+  onEditDocument() {
+    this.router.navigate(['edit'],{relativeTo:this.route})
   }
 
 }

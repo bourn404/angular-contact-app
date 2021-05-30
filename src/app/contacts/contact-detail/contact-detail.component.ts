@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Params } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { Contact } from '../contact.model';
 import { ContactService } from '../contact.service';
 
@@ -12,7 +12,9 @@ export class ContactDetailComponent implements OnInit {
   contact: Contact;
   id: number;
 
-  constructor(private contactService: ContactService, private route: ActivatedRoute) { }
+  constructor(private contactService: ContactService, 
+    private route: ActivatedRoute,
+    private router: Router) { }
 
   ngOnInit() {
     this.route.params.subscribe(
@@ -21,6 +23,10 @@ export class ContactDetailComponent implements OnInit {
         this.contact = this.contactService.getContact(this.id);
       }
     )
+  }
+
+  onEditContact() {
+    this.router.navigate(['edit'],{relativeTo:this.route})
   }
 
 }
