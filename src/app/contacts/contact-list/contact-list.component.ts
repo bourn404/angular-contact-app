@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Contact } from '../contact.model'
+import { ActivatedRoute, Router } from '@angular/router';
 import { ContactService } from '../contact.service';
 
 @Component({
@@ -10,10 +11,16 @@ import { ContactService } from '../contact.service';
 export class ContactListComponent implements OnInit {
   contacts: Contact[];
 
-  constructor(private contactService: ContactService) { }
+  constructor(private contactService: ContactService, 
+    private router: Router,
+    private route: ActivatedRoute) { }
 
   ngOnInit(): void {
     this.contacts = this.contactService.getContacts();
+  }
+
+  onNewContact() {
+    this.router.navigate(['new'], {relativeTo:this.route});
   }
 
 }

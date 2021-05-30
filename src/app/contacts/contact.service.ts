@@ -17,12 +17,7 @@ export class ContactService {
         return this.contacts.slice();
     }
 
-    getContact(id: string): Contact {
-        for(let i=0; i<this.contacts.length; i++) {
-            if(this.contacts[i]['id'] == id) {
-                return this.contacts[i];
-            }
-        }
-        return null;
+    getContact(id: number): Contact {
+        return this.contacts.find(contact=>{return contact.id===id});
     } 
 }
