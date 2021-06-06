@@ -1,15 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Contact } from '../contact.model'
 import { ActivatedRoute, Router } from '@angular/router';
 import { ContactService } from '../contact.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-contact-list',
   templateUrl: './contact-list.component.html',
   styleUrls: ['./contact-list.component.scss']
 })
-export class ContactListComponent implements OnInit {
+export class ContactListComponent implements OnInit, OnDestroy {
   contacts: Contact[];
+  private clChangeSub: Subscription;
 
   constructor(private contactService: ContactService, 
     private router: Router,
@@ -17,11 +19,15 @@ export class ContactListComponent implements OnInit {
 
   ngOnInit(): void {
     this.contacts = this.contactService.getContacts();
-    this.contactService.contactChanged.subscribe(
+    this.clChangeSub = this.contactService.contactListChanged.subscribe(
       (contacts:Contact[]) => {
         this.contacts = contacts;
       }
     )
+  }
+
+  ngOnDestroy(): void {
+    this.clChangeSub.unsubscribe();
   }
 
   onNewContact() {
