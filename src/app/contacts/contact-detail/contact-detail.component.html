@@ -24,6 +24,18 @@
                         <td>{{ contact.phone }}</td>
                     </tr>
                 </table>
+                <div class="col-xs-12 panel-body" *ngIf="groupContacts.length">
+                    <div class="form-group">
+                      <label for="groupList">Group Contacts:</label>
+            
+                        <div id="groupList" *ngFor="let contact of groupContacts; let i = index">
+                          <div>
+                            <app-contact-item class="col-sm-11" [contact]="contact"></app-contact-item>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+    
             </div>
         </div>
     </div>
