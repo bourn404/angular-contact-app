@@ -10,7 +10,7 @@ import { ContactService } from '../contact.service';
   styleUrls: ['./contact-edit.component.scss']
 })
 export class ContactEditComponent implements OnInit {
-  id: number;
+  id: string;
   editMode = false;
   originalContact: Contact;
   contact: Contact;
@@ -21,7 +21,7 @@ export class ContactEditComponent implements OnInit {
   ngOnInit(){
     this.route.params.subscribe(
       (params: Params) => {
-        this.id = +params['id'];
+        this.id = params['id'];
         if(this.id == null) { return }
         this.originalContact = this.contactService.getContact(this.id);
         if(this.originalContact == null) { return }

@@ -12,7 +12,7 @@ import { Document } from '../document.model';
 export class DocumentEditComponent implements OnInit {
   originalDocument: Document;
   document: Document;
-  id: number;
+  id: string;
   editMode = false;
 
   constructor(private route: ActivatedRoute, private documentService: DocumentService, private router: Router) { }
@@ -20,7 +20,7 @@ export class DocumentEditComponent implements OnInit {
   ngOnInit() {
     this.route.params.subscribe(
       (params: Params) => {
-        this.id = +params['id'];
+        this.id = params['id'];
         if(params['id'] == null) {return}
         this.originalDocument = this.documentService.getDocument(this.id)
         if(this.originalDocument == null) {return}

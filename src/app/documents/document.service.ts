@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import { Subject } from 'rxjs';
 import {Document} from './document.model';
-import {MOCKDOCUMENTS} from './MOCKDOCUMENTS';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Injectable({
     providedIn: 'root'
@@ -10,45 +10,60 @@ import {MOCKDOCUMENTS} from './MOCKDOCUMENTS';
 export class DocumentService {
     documentListChanged = new Subject<Document[]>();
 
-    private documents: Document[] = []
-    private maxDocumentId: number = 0;
-    constructor() {
-        this.documents = MOCKDOCUMENTS;
-        this.maxDocumentId = this.getMaxId();
+    documents: Document[] = []
+    private maxDocumentId: string = "0";
+    constructor(private http: HttpClient) {
+        this.getDocuments();
     }
 
     getDocuments() {
-        return this.documents.slice();
+        this.http.get<Document[]>('https://angular-contacts-app-e446a-default-rtdb.firebaseio.com/documents.json')
+        .subscribe( (documents: Document[]) => {
+          this.documents = documents;
+          this.maxDocumentId = this.getMaxId();
+          this.documents.sort();
+          this.documentListChanged.next(this.documents.slice());
+        }, (error:any) => {
+          console.log(error);
+        })
     }
 
-    getDocument(id: number): Document {
+    storeDocuments() {
+        let documents = JSON.stringify(this.documents);
+        this.http.put('https://angular-contacts-app-e446a-default-rtdb.firebaseio.com/documents.json',documents)
+        .subscribe(response => {
+            this.documentListChanged.next(this.documents.slice())
+        })
+    }
+
+    getDocument(id: string): Document {
         return this.documents.find(document=>{return document.id===id});
     } 
 
     
-    getMaxId(): number {
+    getMaxId(): string {
 
         let maxId = 0
 
         this.documents.forEach((document)=>{
-            if(document.id > maxId) {
-                maxId = document.id;
+            if(parseInt(document.id) > maxId) {
+                maxId = parseInt(document.id);
             }
         })
 
-        return maxId;
+        return maxId.toString();
     }
 
     addDocument(newDocument: Document) {
         if(!newDocument) {
             return
         }
-    
-        this.maxDocumentId++
-        newDocument.id = this.maxDocumentId
+        
+        let newMaxDocId = parseInt(this.maxDocumentId)
+        newDocument.id = (newMaxDocId++).toString()
 
         this.documents.push(newDocument)
-        this.documentListChanged.next(this.documents.slice())
+        this.storeDocuments()
     }
 
     updateDocument(originalDocument: Document, newDocument: Document) {
@@ -63,7 +78,7 @@ export class DocumentService {
     
         newDocument.id = originalDocument.id
         this.documents[pos] = newDocument
-        this.documentListChanged.next(this.documents.slice())
+        this.storeDocuments()
     }
 
     deleteDocument(document: Document) {
@@ -75,7 +90,7 @@ export class DocumentService {
            return;
         }
         this.documents.splice(pos, 1);
-        this.documentListChanged.next(this.documents.slice());
+        this.storeDocuments()
     }
 
 }

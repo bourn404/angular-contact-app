@@ -16,9 +16,10 @@ export class ContactListComponent implements OnInit, OnDestroy {
   constructor(private contactService: ContactService, 
     private router: Router,
     private route: ActivatedRoute) { }
+    term: string
 
   ngOnInit(): void {
-    this.contacts = this.contactService.getContacts();
+    this.contacts = this.contactService.contacts;
     this.clChangeSub = this.contactService.contactListChanged.subscribe(
       (contacts:Contact[]) => {
         this.contacts = contacts;
@@ -32,6 +33,12 @@ export class ContactListComponent implements OnInit, OnDestroy {
 
   onNewContact() {
     this.router.navigate(['new'], {relativeTo:this.route});
+  }
+
+  search(value: string) {
+
+    this.term = value;
+    
   }
 
 }

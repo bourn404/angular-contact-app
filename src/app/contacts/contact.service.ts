@@ -1,7 +1,8 @@
 import {Injectable} from '@angular/core';
 import {Contact} from './contact.model';
-import {MOCKCONTACTS} from './MOCKCONTACTS';
 import {Subject} from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+
 
 @Injectable({
   providedIn: 'root'
@@ -10,44 +11,62 @@ export class ContactService {
     contactListChanged = new Subject<Contact[]>();
 
    
-    private contacts: Contact [] =[];
-    private maxContactId: number = 0;
-    constructor() {
-        this.contacts = MOCKCONTACTS;
-        this.maxContactId = this.getMaxId();
+    contacts: Contact [] = [];
+    private maxContactId: string = "0";
+    constructor(private http: HttpClient) {
+        this.getContacts();
     }
 
     getContacts() {
-        return this.contacts.slice();
+        this.http.get<Contact[]>('https://angular-contacts-app-e446a-default-rtdb.firebaseio.com/contacts.json')
+        .subscribe( (contacts: Contact[]) => {
+          this.contacts = contacts;
+          console.log(this.contacts)
+          this.maxContactId = this.getMaxId();
+          this.contacts.sort();
+          this.contactListChanged.next(this.contacts.slice());
+        }, (error:any) => {
+          console.log(error);
+        })    
     }
 
-    getContact(id: number): Contact {
+    storeContacts() {
+        let contacts = JSON.stringify(this.contacts);
+        this.http.put('https://angular-contacts-app-e446a-default-rtdb.firebaseio.com/contacts.json',contacts)
+        .subscribe(response => {
+            this.contactListChanged.next(this.contacts.slice())
+        })
+    }
+
+    getContact(id: string): Contact {
         return this.contacts.find(contact=>{return contact.id===id});
     } 
 
-    getMaxId(): number {
+    getMaxId(): string {
 
         let maxId = 0
 
         this.contacts.forEach((contact)=>{
-            if(contact.id > maxId) {
-                maxId = contact.id;
+            if(parseInt(contact.id) > maxId) {
+                maxId = parseInt(contact.id);
             }
         })
+        console.log("max id: " + maxId.toString());
 
-        return maxId;
+        return maxId.toString();
     }
 
     addContact(newContact: Contact) {
         if(!newContact) {
             return
         }
-    
-        this.maxContactId++
-        newContact.id = this.maxContactId
+        
+        let newMaxContactId = parseInt(this.maxContactId)
+        newMaxContactId = newMaxContactId+1;
+        newContact.id = newMaxContactId.toString()
 
         this.contacts.push(newContact)
-        this.contactListChanged.next(this.contacts.slice())
+        this.storeContacts();
     }
 
     updateContact(originalContact: Contact, newContact: Contact) {
@@ -62,7 +81,7 @@ export class ContactService {
     
         newContact.id = originalContact.id
         this.contacts[pos] = newContact
-        this.contactListChanged.next(this.contacts.slice())
+        this.storeContacts();
     }
 
     deleteContact(contact: Contact) {
@@ -74,6 +93,6 @@ export class ContactService {
            return;
         }
         this.contacts.splice(pos, 1);
-        this.contactListChanged.next(this.contacts.slice());
+        this.storeContacts();
     }
 }

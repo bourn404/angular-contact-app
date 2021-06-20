@@ -1,6 +1,7 @@
 import {EventEmitter, Injectable} from '@angular/core';
 import {Message} from './message.model';
-import {MOCKMESSAGES} from './MOCKMESSAGES';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+
 
 @Injectable({
   providedIn: 'root'
@@ -8,13 +9,31 @@ import {MOCKMESSAGES} from './MOCKMESSAGES';
 
 export class MessageService {   
     messagesChanged = new EventEmitter<Message[]>();
-    private messages: Message[]=[];
-    constructor() {
-        this.messages = MOCKMESSAGES;
+    messages: Message[]=[];
+    private maxMessageId: string = "0";
+
+    constructor(private http: HttpClient) {
+        this.getMessages()
     }
 
     getMessages() {
-        return this.messages.slice();
+        this.http.get<Message[]>('https://angular-contacts-app-e446a-default-rtdb.firebaseio.com/messages.json')
+        .subscribe( (messages: Message[]) => {
+          this.messages = messages;
+          this.maxMessageId = this.getMaxId();
+          this.messages.sort();
+          this.messagesChanged.next(this.messages.slice());
+        }, (error:any) => {
+          console.log(error);
+        })
+    }
+
+    storeMessages() {
+        let messages = JSON.stringify(this.messages);
+        this.http.put('https://angular-contacts-app-e446a-default-rtdb.firebaseio.com/messages.json',messages)
+        .subscribe(response => {
+            this.messagesChanged.next(this.messages.slice())
+        })
     }
 
     getMessage(id: string): Message {
@@ -26,9 +45,19 @@ export class MessageService {
         return null;
     } 
 
+    getMaxId(): string {
+        let maxId = 0
+        this.messages.forEach((message)=>{
+            if(parseInt(message.id) > maxId) {
+                maxId = parseInt(message.id);
+            }
+        })
+        return maxId.toString();
+    }
+
     addMessage(message: Message) {
         this.messages.push(message);
-        this.messagesChanged.emit(this.messages.slice());
+        this.storeMessages()
     }
 
 }
