@@ -17,7 +17,7 @@ export class DocumentService {
     }
 
     getDocuments() {
-        this.http.get<Document[]>('https://angular-contacts-app-e446a-default-rtdb.firebaseio.com/documents.json')
+        this.http.get<Document[]>('http://localhost:3000/documents')
         .subscribe( (documents: Document[]) => {
           this.documents = documents;
           this.maxDocumentId = this.getMaxId();
@@ -30,7 +30,7 @@ export class DocumentService {
 
     storeDocuments() {
         let documents = JSON.stringify(this.documents);
-        this.http.put('https://angular-contacts-app-e446a-default-rtdb.firebaseio.com/documents.json',documents)
+        this.http.put('http://localhost:3000/documents',documents)
         .subscribe(response => {
             this.documentListChanged.next(this.documents.slice())
         })
@@ -54,17 +54,29 @@ export class DocumentService {
         return maxId.toString();
     }
 
-    addDocument(newDocument: Document) {
-        if(!newDocument) {
-            return
+    addDocument(document: Document) {
+        if (!document) {
+            return;
         }
-        
-        let newMaxDocId = parseInt(this.maxDocumentId)
-        newDocument.id = (newMaxDocId++).toString()
-
-        this.documents.push(newDocument)
-        this.storeDocuments()
+      
+        // make sure id of the new Document is empty
+        document.id = '';
+      
+        const headers = new HttpHeaders({'Content-Type': 'application/json'});
+      
+        // add to database
+        this.http.post<{ message: string, document: Document }>('http://localhost:3000/documents',
+            document,
+            { headers: headers })
+            .subscribe(
+              (responseData) => {
+                // add new document to documents
+                this.documents.push(responseData.document);
+                this.documentListChanged.next(this.documents.slice())
+              }
+        );
     }
+          
 
     updateDocument(originalDocument: Document, newDocument: Document) {
         if(!originalDocument || !newDocument) {
@@ -81,16 +93,27 @@ export class DocumentService {
         this.storeDocuments()
     }
 
+
     deleteDocument(document: Document) {
+
         if (!document) {
-           return;
+          return;
         }
-        const pos = this.documents.indexOf(document);
+    
+        const pos = this.documents.findIndex(d => d.id === document.id);
+    
         if (pos < 0) {
-           return;
+          return;
         }
-        this.documents.splice(pos, 1);
-        this.storeDocuments()
-    }
+    
+        // delete from database
+        this.http.delete('http://localhost:3000/documents/' + document.id)
+          .subscribe(
+            (response: Response) => {
+              this.documents.splice(pos, 1);
+              this.documentListChanged.next(this.documents.slice())
+            }
+          );
+      }
 
 }
