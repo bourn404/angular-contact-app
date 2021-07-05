@@ -17,7 +17,7 @@ export class MessageService {
     }
 
     getMessages() {
-        this.http.get<Message[]>('https://angular-contacts-app-e446a-default-rtdb.firebaseio.com/messages.json')
+        this.http.get<Message[]>('http://localhost:3000/messages')
         .subscribe( (messages: Message[]) => {
           this.messages = messages;
           this.maxMessageId = this.getMaxId();
@@ -25,14 +25,6 @@ export class MessageService {
           this.messagesChanged.next(this.messages.slice());
         }, (error:any) => {
           console.log(error);
-        })
-    }
-
-    storeMessages() {
-        let messages = JSON.stringify(this.messages);
-        this.http.put('https://angular-contacts-app-e446a-default-rtdb.firebaseio.com/messages.json',messages)
-        .subscribe(response => {
-            this.messagesChanged.next(this.messages.slice())
         })
     }
 
@@ -55,9 +47,27 @@ export class MessageService {
         return maxId.toString();
     }
 
-    addMessage(message: Message) {
-        this.messages.push(message);
-        this.storeMessages()
+    addMessage(msg: Message) {
+        if (!msg) {
+            return;
+          }
+      
+          // make sure id of the new Document is empty
+          msg.id = '';
+      
+          const headers = new HttpHeaders({'Content-Type': 'application/json'});
+      
+          // add to database
+          this.http.post<{ message: string, msg: Message }>('http://localhost:3000/messages',
+            msg,
+            { headers: headers })
+            .subscribe(
+              (responseData) => {
+                // add new msg to msgs
+                this.messages.push(responseData.msg);
+                this.messagesChanged.next(this.messages.slice())
+                }
+            );
     }
 
 }
