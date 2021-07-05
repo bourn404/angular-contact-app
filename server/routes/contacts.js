@@ -22,14 +22,16 @@ router.get('/', (req, res, next) => {
 router.post('/', (req, res, next) => {
     const maxContactId = sequenceGenerator.nextId("contacts");
 
+    console.log(req.body)
+
     const contact = new Contact({
         id: maxContactId,
         name: req.body.name,
         email: req.body.email,
         phone: req.body.phone,
-        imageUrl: req.body.imageUrl,
-        group: null
+        imageUrl: req.body.imageUrl
     });
+
 
     contact.save()
         .then(createdContact => {
